@@ -1,48 +1,49 @@
 import React, { Component } from 'react';
 import CheckoutSummery from '../../components/Order/CheckoutSummery/CheckoutSummery';
-import {Route} from 'react-router-dom';
+import { Route, Redirect } from 'react-router-dom';
 import ContactData from '../../containers/Checkout/ContactData/ContactData';
 
-import {connect} from 'react-redux';
 
-
+import { connect } from 'react-redux';
 
 class Checkout extends Component {
 
-    
 
-    checkoutCanceledHandler =()=>{
+    checkoutCanceledHandler = () => {
         this.props.history.goBack();
     }
 
-    checkoutContinuedHandler =()=>{
+    checkoutContinuedHandler = () => {
         console.log('going to contact data', this.props.match.path);
-        this.props.history.replace(this.props.match.path+'/contact-data/');
+        this.props.history.replace(this.props.match.path + '/contact-data/');
     }
 
     render() {
-        return (
-            <div>
-                <CheckoutSummery 
-                ingredients={this.props.ings}
-                checkoutCanceled={this.checkoutCanceledHandler}
-                checkoutContinued={this.checkoutContinuedHandler}/>
-                
-                 <Route path={this.props.match.path +'/contact-data'} component={ContactData} />
-                {/* <Route 
-                path={this.props.match.path +'/contact-data'}
-                render={(props)=>(<ContactData ingredients={this.props.ings} price={this.props.totPrice} {...props}/>) } /> */}
-            </div>
-        );
+        let summery = <Redirect to="/" />
+        if (this.props.ings) {
+            const purRedirect = this.props.purchased ? <Redirect to="/" /> : null;
+            summery = (
+                <div>
+                    {purRedirect}
+                    <CheckoutSummery
+                        ingredients={this.props.ings}
+                        checkoutCanceled={this.checkoutCanceledHandler}
+                        checkoutContinued={this.checkoutContinuedHandler} />
+                    <Route path={this.props.match.path + '/contact-data'} component={ContactData} />
+                </div>
+            );
+        }
+        return summery;
+
     }
-
-
 }
 
 const mapStateToProps = state => {
-    return{
-        ings: state.ingredients,
-        totPrice: state.totPrice
+    return {
+        ings: state.burgerBuilder.ingredients,
+        purchased: state.order.purchased
     };
 }
+
+
 export default connect(mapStateToProps)(Checkout);
