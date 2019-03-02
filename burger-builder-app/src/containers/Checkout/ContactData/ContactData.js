@@ -15,9 +15,9 @@ class ContactData extends Component {
 
             name: this.createBody('input', { type: 'text', placeholder: 'Your Name' },'', { required: true }, false),
             street: this.createBody('input', { type: 'text', placeholder: 'Street' },'', { required: true }, false),
-            zip: this.createBody('input', { type: 'text', placeholder: 'Postal code' },'' ,{ required: true, minLen: 5, maxLen: 5 }, false),
+            zip: this.createBody('input', { type: 'text', placeholder: 'Postal code' },'' ,{ required: true, minLen: 5, maxLen: 5, isNumeric:true }, false),
             country: this.createBody('input', { type: 'text', placeholder: 'Country' },'', { required: true }, false),
-            email: this.createBody('input', { type: 'email', placeholder: 'e-mail' },'', { required: true }, false),
+            email: this.createBody('input', { type: 'email', placeholder: 'e-mail' },'', { required: true, isEmail: true }, false),
             deliveryMethod: this.createBody('select', {
                 options:
                     [
@@ -61,7 +61,7 @@ class ContactData extends Component {
             orderData: formData
 
         }
-        this.props.onOrderBurger(order);
+        this.props.onOrderBurger(order, this.props.token);
         
     }
     // Validation
@@ -76,6 +76,15 @@ class ContactData extends Component {
         }
         if(rules.maxLen){
             isValid = value.trim().length <= rules.maxLen && isValid;
+        }
+        if(rules.isEmail){
+            const pattern = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+            isValid = pattern.test(value) && isValid;
+
+        }
+        if(rules.isNumeric){
+            const pattern = /^\d+$/;
+            isValid = pattern.test(value) && isValid;
         }
         return isValid;
     }
@@ -147,14 +156,15 @@ const mapStateToProps = state => {
     return{
         ings: state.burgerBuilder.ingredients,
         totPrice: state.burgerBuilder.totalPrice,
-        loading: state.order.loading
+        loading: state.order.loading,
+        token: state.auth.token
         
     };
 }
 
 const mapDispatchToProps = dispatch => {
     return{
-    onOrderBurger: (orderdata)=>dispatch(Orderactions.purchaseBurger(orderdata))
+    onOrderBurger: (orderdata, token)=>dispatch(Orderactions.purchaseBurger(orderdata, token))
     };
 }
 export default connect(mapStateToProps,mapDispatchToProps)(withErrorhandler(ContactData, axios));
